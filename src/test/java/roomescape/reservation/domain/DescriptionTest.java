@@ -19,7 +19,9 @@ class DescriptionTest {
     void createDescriptionByLengthTest() {
         String input = "가나다라마바사아자차".repeat(5) + "1";
 
+//        assertThatThrownBy(() -> new Description(input))
+//                .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Description(input))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 }
