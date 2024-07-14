@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+spring:
+  sql:
+    init:
+      data-locations:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+security:
+  jwt:
+    secret-key: TestSecretKeyTestSecretKeyTestSecretKeyTestSecretKeyTestSecretKey
+    expiration-time: 36000000
+
+payment:
+  base-url: https://api.tosspayments.com
+  secret-key: testSecretKey
