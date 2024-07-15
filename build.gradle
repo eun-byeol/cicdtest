@@ -63,3 +63,5 @@ tasks.register('copyDocument', Copy) {
 build {
     dependsOn copyDocument
 }
+
+jar { enabled = false }
