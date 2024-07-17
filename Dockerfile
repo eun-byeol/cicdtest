@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine
+FROM --platform=linux/arm64 openjdk:17
 
 ARG JAR_FILE=/build/libs/cicdtest-0.0.1-SNAPSHOT.jar
 
