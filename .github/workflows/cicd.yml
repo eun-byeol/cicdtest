@@ -53,8 +53,8 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu
 
   cd:
-    needs: ci
-    runs-on: [ self-hosted, maxOS, X64 ]
+#    needs: ci
+    runs-on: self-hosted
 
     steps:
       - name: Pull Latest Docker Image
