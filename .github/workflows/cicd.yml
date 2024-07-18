@@ -6,11 +6,8 @@ on:
   pull_request:
     branches: [ "backend/develop" ]
 
-#permissions:
-#  contents: read
-
 jobs:
-  ci:
+  ci-job:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,29 +44,48 @@ jobs:
 
       - name: Docker Image Build
         run: |
-          docker build --platform linux/x64/v8 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu -f Dockerfile .
+          docker build --platform linux/x64/v8 -t ${{ secrets.DOCKERHUB_USERNAME }}/ody-backend:${{ github.sha }} -f Dockerfile .
 
       - name: Docker Hub Push
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/ody-backend:${{ github.sha }}
 
-  cd:
-#    needs: ci
+  cd-job:
+    needs: ci-job
     runs-on: self-hosted
 
     steps:
-      - name: Pull Latest Docker Image
-        run: |
-          sudo docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
-          if sudo docker inspect cicd-container &>/dev/null; then
-            sudo docker stop cicd-container
-            sudo docker rm -f cicd-container
-            sudo docker image prune -af
-          fi
-          sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu:latest
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Run Container
-        run: |
-          sudo docker run --name cicd-container -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu:latest 1>> build.log 2>> error.log &
+      - name: Pull Docker image from DockerHub # docker image를 pull 해온다.
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ody-backend:${{ github.sha }}
+
+      - name: Stop existing Docker container # 실행중인 docker container가 있다면 중지한다.
+        run: docker stop ody-backend || true
+
+      - name: Remove existing Docker container # 기존의 docker container가 있다면 삭제한다.
+        run: docker rm ody-backend || true
+
+      - name: Run new Docker container # 새로운 docker container를 실행한다.
+        run: docker run -d --name ody-backend -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ody-backend:${{ github.sha }}
+
+#
+#      - name: Pull Latest Docker Image
+#        run: |
+#          sudo docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
+#          if sudo docker inspect cicd-container &>/dev/null; then
+#            sudo docker stop cicd-container
+#            sudo docker rm -f cicd-container
+#            sudo docker image prune -af
+#          fi
+#          sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu:latest
+#
+#      - name: Run Container
+#        run: |
+#          sudo docker run --name cicd-container -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/my-ubuntu:latest 1>> build.log 2>> error.log &
 #jobs:
 ##  build:
 ##    runs-on: ubuntu-latest
